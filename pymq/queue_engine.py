@@ -6,7 +6,7 @@ class PyMQ(object):
         self._queue = queue
 
     @contextmanager
-    def next_message(self):
+    def dequeue(self):
         context = self._queue.get_context()
         message = self._queue.dequeue(context)
         if not message:
@@ -16,8 +16,9 @@ class PyMQ(object):
                 pass
             finally:
                 self._queue.no_message(context)
+                return
         try:
             yield context, message
             self._queue.message_success(context, message)
         except Exception as e:
-            return self._queue.message_fail(context, message, e)
+            self._queue.message_fail(context, message, e)

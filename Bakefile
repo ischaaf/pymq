@@ -1,26 +1,29 @@
 #!/usr/bin/env bash
 
-bake_task example.simple "run the simple example"
-function example.simple () {
-  python -m examples.simple
+bake_task example "run an example"
+function example () {
+  local example_name="${1:-}"
+  if [ -z "$example_name" ]; then
+    bake_echo_red "Available examples:"
+    for d in examples/*; do
+      echo "bake example $(basename $d)"
+    done
+    return 1
+  fi
+  python -m "examples.$example_name"
 }
 
 
 bake_task start.postgres "start a postgres docker container for the postgres example"
 function start.postgres () {
-  docker kill mqcommand_postgres
+  docker kill mqcommand_postgres 2>/dev/null || :
   docker run -it --rm -d \
     -p "5433:5432" \
-    -v "$PWD/create_message_queue.sql:/app/create_message_queue.sql" \
+    -v "$PWD/fixtures:/app/fixtures" \
     --name "mqcommand_postgres" postgres:10
   echo "wait for postgres to start..."
   sleep 5
   docker exec -it mqcommand_postgres psql \
     postgres://postgres@localhost \
-    -f /app/create_message_queue.sql
-}
-
-bake_task example.postgres "run the postgres example"
-function example.postgres () {
-  python -m examples.postgres
+    -f /app/fixtures/create_message_queue.sql
 }

@@ -68,7 +68,7 @@ class MQCommandEngine(object):
                 pass
 
     def handle_next_message(self):
-        with self._engine.next_message() as (ctx, msg):
+        with self._engine.dequeue() as (ctx, msg):
             if not msg:
                 self._no_message_handler(ctx)
                 return
