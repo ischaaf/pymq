@@ -9,7 +9,11 @@ def default_fail_handler(ctx, cmd, msg, error):
     log.error(f'message failed processing: {cmd} with error: {error}')
 
 
-def default_no_message_handler(ctx, cmd, msg, error):
+def default_no_message(ctx):
+    log.warn('no messages found')
+
+
+def default_no_handler(ctx, cmd, msg, error):
     log.warn(f'no handler found for command: {cmd}')
 
 
@@ -24,7 +28,8 @@ class MQCommandEngine(object):
         self._engine = engine
         self._base_dispatcher = dispatcher
         self._fail_handler = default_fail_handler
-        self._no_handler = default_no_message_handler
+        self._no_handler = default_no_handler
+        self._no_message = default_no_message
         self._get_command = default_get_command
         self._dispatchers = []
 
@@ -41,8 +46,12 @@ class MQCommandEngine(object):
         self._fail_handler = fn
         return fn
 
-    def no_message_handler(self, fn):
-        self._no_message_handler = fn
+    def no_message(self, fn):
+        self._no_message = fn
+        return fn
+
+    def no_handler(self, fn):
+        self._no_handler = fn
         return fn
 
     def get_command(self, fn):
@@ -63,6 +72,8 @@ class MQCommandEngine(object):
             try:
                 self.handle_next_message()
             except Exception as e:
+                if e is SystemExit:
+                    raise e
                 # This exception as already handled once in
                 # handle_next_message, no need to process again
                 pass
@@ -70,7 +81,7 @@ class MQCommandEngine(object):
     def handle_next_message(self):
         with self._engine.dequeue() as (ctx, msg):
             if not msg:
-                self._no_message_handler(ctx)
+                self._no_message(ctx)
                 return
             cmd = self._get_command(msg)
             handler = self.get_handler(cmd)

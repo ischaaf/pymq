@@ -12,13 +12,14 @@ class PyMQ(object):
         if not message:
             try:
                 yield context, message
+                return
             except Exception as e:
-                pass
+                raise e
             finally:
                 self._queue.no_message(context)
-                return
         try:
             yield context, message
             self._queue.message_success(context, message)
         except Exception as e:
             self._queue.message_fail(context, message, e)
+            raise e
