@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+bake_task example.simple "run the simple example"
+function example.simple () {
+  python -m examples.simple
+}
+
+
+bake_task start.postgres "start a postgres docker container for the postgres example"
+function start.postgres () {
+  docker kill mqcommand_postgres
+  docker run -it --rm -d \
+    -p "5433:5432" \
+    -v "$PWD/create_message_queue.sql:/app/create_message_queue.sql" \
+    --name "mqcommand_postgres" postgres:10
+  echo "wait for postgres to start..."
+  sleep 5
+  docker exec -it mqcommand_postgres psql \
+    postgres://postgres@localhost \
+    -f /app/create_message_queue.sql
+}
+
+bake_task example.postgres "run the postgres example"
+function example.postgres () {
+  python -m examples.postgres
+}
