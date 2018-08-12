@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: pymq
+Version: 0.1.0
+Summary: A queue wrapper library for python
+Home-page: UNKNOWN
+Author: Isaac Schaaf
+Author-email: zeekus99@gmail.com
+License: Apache-2.0
+Description: UNKNOWN
+Keywords: queue message-queue
+Platform: UNKNOWN
