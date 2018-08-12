@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
@@ -10,5 +10,5 @@ setup(
     description=("A queue wrapper library for python"),
     license="Apache-2.0",
     keywords="queue message-queue",
-    packages=['pymq'],
+    packages=find_packages(exclude=('examples',)),
 )
