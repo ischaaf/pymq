@@ -1,4 +1,4 @@
-from pymq.command.command_engine import MQCommandEngine
-from pymq.command import dispatcher
+from .command_engine import MQCommandEngine
+from . import dispatcher
 
 __all__ = [MQCommandEngine, dispatcher]

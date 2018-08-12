@@ -1,4 +1,4 @@
-from pymq.queue.postgres.queue_impl import PostgresQueue, PostgresContext
-from pymq.queue.postgres import decorators
+from .queue_impl import PostgresQueue, PostgresContext
+from . import decorators
 
 __all__ = [PostgresQueue, PostgresContext, decorators]
