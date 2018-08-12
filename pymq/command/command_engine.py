@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 def default_fail_handler(ctx, cmd, msg, error):
-    log.error(f'message failed processing: {cmd} with error: {error}')
+    raise error
 
 
 def default_no_message(ctx):
@@ -69,14 +69,7 @@ class MQCommandEngine(object):
 
     def start(self):
         while True:
-            try:
-                self.handle_next_message()
-            except Exception as e:
-                if e is SystemExit:
-                    raise e
-                # This exception as already handled once in
-                # handle_next_message, no need to process again
-                pass
+            self.handle_next_message()
 
     def handle_next_message(self):
         with self._engine.dequeue() as (ctx, msg):
@@ -92,4 +85,3 @@ class MQCommandEngine(object):
                 handler(ctx, cmd, msg)
             except Exception as e:
                 self._fail_handler(ctx, cmd, msg, e)
-                raise e

@@ -12,29 +12,29 @@ messages = [
 
 mem_queue = MemoryQueue(messages)
 queue = PyMQ(mem_queue)
-qcmd = MQCommandEngine(queue)
+cmd_engine = MQCommandEngine(queue)
 
 
 """ Handle queue edge cases """
 
 
-@qcmd.get_command
+@cmd_engine.get_command
 def get_command(msg):
     return msg['command']
 
 
-@qcmd.fail_handler
+@cmd_engine.fail_handler
 def fail_handler(ctx, cmd, msg, error):
     print(f'Handler for {cmd} failed with error: {error}')
 
 
-@qcmd.no_message
+@cmd_engine.no_message
 def no_message(ctx):
     print('No message found, exiting')
     sys.exit(1)
 
 
-@qcmd.no_handler
+@cmd_engine.no_handler
 def no_handler(ctx, cmd, msg):
     print(f'No handler for {cmd}')
 
@@ -42,7 +42,7 @@ def no_handler(ctx, cmd, msg):
 """ Handle messages """
 
 
-@qcmd.handles('cmd1')
+@cmd_engine.handles('cmd1')
 def handle_cmd1(ctx, cmd, msg):
     print(f'received command: {cmd}')
     print(f'full message: {msg}')
@@ -51,7 +51,7 @@ def handle_cmd1(ctx, cmd, msg):
 has_failed = False
 
 
-@qcmd.handles('cmd2')
+@cmd_engine.handles('cmd2')
 def handle_cmd2(ctx, cmd, msg):
     global has_failed
     print(f'received command: {cmd}')
@@ -63,4 +63,4 @@ def handle_cmd2(ctx, cmd, msg):
     print('succeeding on the second try')
 
 
-qcmd.start()
+cmd_engine.start()
