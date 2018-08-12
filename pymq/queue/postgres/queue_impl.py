@@ -30,19 +30,6 @@ class PostgresContext(object):
     def __init__(self, conn, session):
         self.conn = conn
         self.session = session
-        self.has_saved = False
-
-    def save(self):
-        if self.has_saved:
-            raise Exception('already saved')
-        self.session.execute("SAVEPOINT mq_message_deleted")
-        self.has_saved = True
-
-    def rollback_to_save(self):
-        if not self.has_saved:
-            raise Exception('no save')
-        self.session.execute("ROLLBACK TO SAVEPOINT mq_message_deleted")
-        self.has_saved = False
 
     def commit(self):
         self.session.commit()
@@ -78,15 +65,9 @@ class PostgresQueue(BaseQueue):
         return None
 
     def message_success(self, ctx, message):
-        try:
-            ctx.commit()
-        except ResourceClosedError as e:
-            pass
+        ctx.commit()
         return True
 
     def message_fail(self, ctx, message, error):
-        try:
-            ctx.rollback()
-        except ResourceClosedError as e:
-            pass
+        ctx.rollback()
         raise error
