@@ -57,7 +57,6 @@ class PostgresQueue(BaseQueue):
         if response.rowcount == 0:
             return None
         message = dump_message(response.fetchone())
-        ctx.save()
         return message
 
     def no_message(self, ctx):
