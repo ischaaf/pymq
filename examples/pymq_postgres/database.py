@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 db_engine = sqlalchemy.create_engine(
     'postgres://postgres@localhost:5433/postgres',
-    pool_size=1,
+    pool_size=2,
     max_overflow=0
 )
 

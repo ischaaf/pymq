@@ -20,9 +20,12 @@ with database.start_transaction() as session:
     session.execute(INSERT_STATEMENT, messages)
 
 
+channel = 'mq_new_message'
+
+
 def main():
     # Construct a queue implementation from a postgres engine
-    postgres_queue = PostgresQueue(database.db_engine)
+    postgres_queue = PostgresQueue(database.db_engine, channel)
 
     # construct the queue
     queue = PyMQ(postgres_queue)
@@ -42,6 +45,10 @@ def main():
         print(f'got message: {msg}')
     with queue.dequeue() as (ctx, msg):
         print(f'got message: {msg}')
+
+    print('waiting for non-existent message')
+    with queue.dequeue() as (ctx, msg):
+        pass
 
 
 main()

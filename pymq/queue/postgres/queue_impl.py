@@ -1,7 +1,7 @@
 import datetime
+import select
 from pymq.queue import BaseQueue
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import ResourceClosedError
 
 
 DEQUEUE_SQL = """
@@ -43,8 +43,13 @@ class PostgresContext(object):
 
 
 class PostgresQueue(BaseQueue):
-    def __init__(self, db_engine):
+    def __init__(self, db_engine, channel):
         self._engine = db_engine
+        self._conn = db_engine.connect()
+
+        cursor = self._conn.connection.cursor()
+        cursor.execute(f'LISTEN {channel};')
+        self._conn.connection.commit()
 
     def get_context(self):
         conn = self._engine.connect()
@@ -52,12 +57,30 @@ class PostgresQueue(BaseQueue):
         ctx = PostgresContext(conn, session)
         return ctx
 
-    def dequeue(self, ctx):
+    def check_for_message(self, ctx):
         response = ctx.session.execute(DEQUEUE_SQL)
         if response.rowcount == 0:
             return None
         message = dump_message(response.fetchone())
         return message
+
+    def poll_for_message(self, ctx, timeout):
+        conn = self._conn.connection
+        if select.select([conn], [], [], timeout) == ([], [], []):
+            return None
+
+        conn.poll()
+        conn.notifies = []
+        print('poll found message')
+        msg = self.check_for_message(ctx)
+        print(f'msg: {msg}')
+        return msg
+
+    def dequeue(self, ctx, timeout=30):
+        msg = self.check_for_message(ctx)
+        if msg:
+            return msg
+        return self.poll_for_message(ctx, timeout)
 
     def no_message(self, ctx):
         ctx.commit()
