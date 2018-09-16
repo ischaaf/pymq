@@ -10,7 +10,6 @@ class AsyncMQCommandEngine(MQCommandEngine):
 
     async def start(self):
         for _ in range(self._max_in_flight):
-            print('spawning task')
             coro = self.handle_and_track()
             self._loop.create_task(coro)
 
