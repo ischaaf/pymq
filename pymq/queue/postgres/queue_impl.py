@@ -65,6 +65,7 @@ class PostgresQueue(BaseQueue):
         return message
 
     def poll_for_message(self, ctx, timeout):
+        print('polling for message')
         conn = self._conn.connection
         if select.select([conn], [], [], timeout) == ([], [], []):
             return None
