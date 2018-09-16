@@ -65,16 +65,13 @@ class PostgresQueue(BaseQueue):
         return message
 
     def poll_for_message(self, ctx, timeout):
-        print('polling for message')
         conn = self._conn.connection
         if select.select([conn], [], [], timeout) == ([], [], []):
             return None
 
         conn.poll()
         conn.notifies = []
-        print('poll found message')
         msg = self.check_for_message(ctx)
-        print(f'msg: {msg}')
         return msg
 
     def dequeue(self, ctx, timeout=30):
